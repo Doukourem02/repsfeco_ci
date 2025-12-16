@@ -8,10 +8,28 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+# Node modules
+node_modules/
+
+# Build output
+.next/
 dist
 dist-ssr
+
+# System files
+.DS_Store
+
+# Logs
+npm-debug.log*
 *.local
 
+
+# Env files
+.env
+.env.*
+
+# VSCode
+.vscode/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
