@@ -58,20 +58,26 @@ const ContactUs = () => {
         viewport={{ once: true }}
         className="w-full max-w-2xl mb-6 text-center text-gray-600 dark:text-gray-400"
       >
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm">
+        <div className="flex flex-col gap-3 justify-center items-center text-sm">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <div className="flex items-center gap-2">
             <span>📍</span>
-            <span>Abidjan – Cocody Saint Jean Val Doyen, Rez de chaussée, Immeuble Charlemagne</span>
+              <span className="text-center">Siège social : Abidjan Cocody Saint Jean Val Doyen 2, Immeuble Ariane, 1er étage, port 9</span>
+            </div>
           </div>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-3 text-sm">
           <div className="flex items-center gap-2">
+            <span>📮</span>
+            <span>06 BP 390 ABIDJAN 06</span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex items-center gap-2">
             <span>📞</span>
-            <span>+225 57 99 14 90 / 21 35 09 03 / 22 44 67 08</span>
+              <span>+225 07 57 99 14 90 / 05 04 34 34 24 / 07 08 54 08 78 / 27 22 44 67 08</span>
           </div>
           <div className="flex items-center gap-2">
             <span>✉️</span>
             <a href="mailto:repsfecoci@yahoo.fr" className="hover:text-primary">repsfecoci@yahoo.fr</a>
+            </div>
           </div>
         </div>
       </motion.div>

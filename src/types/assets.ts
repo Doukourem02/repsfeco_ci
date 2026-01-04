@@ -2,7 +2,6 @@
 export interface Assets {
   logo: string;
   arrow_icon: string;
-  group_profile: string;
   bgImage1: string;
   bgImage2: string;
   hero_img: string;
@@ -50,5 +49,18 @@ export interface WorkItem {
   title: string;
   description: string;
   image: string;
+}
+
+export interface Activity {
+  id: string;
+  title: string;
+  shortDescription: string;
+  fullDescription: string;
+  date: string; // Date affichée (ex: "28 octobre 2023")
+  dateTimestamp: number; // Timestamp pour le tri chronologique
+  images: string[];
+  videos?: string[];
+  category?: string;
+  location?: string;
 }
 

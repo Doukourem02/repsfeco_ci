@@ -4,7 +4,6 @@ import type { Assets, TeamMember } from '@/types/assets';
 const assets: Assets = {
   logo: '/assets/logo/logo.png',
   arrow_icon: '/assets/arrow_icon.svg',
-  group_profile: '/assets/group_profile.png',
   bgImage1: '/assets/bgImage1.png',
   bgImage2: '/assets/bgImage2.png',
   hero_img: '/assets/slide /hero.jpg',

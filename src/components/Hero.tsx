@@ -8,22 +8,15 @@ const Hero = () => {
   return (
     <div
       id="hero"
-      className="flex flex-col items-center gap-4 sm:gap-5 py-12 sm:py-16 px-4 sm:px-12 lg:px-24 xl:px-40 text-center w-full overflow-hidden text-gray-700 dark:text-white"
+      className="flex flex-col items-center gap-4 sm:gap-5 pt-24 sm:pt-28 pb-12 sm:pb-16 px-4 sm:px-12 lg:px-24 xl:px-40 text-center w-full overflow-hidden text-gray-700 dark:text-white"
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.7 }}
         viewport={{ once: true }}
-        className="inline-flex items-center gap-2 border border-gray-300 p-1.5 pr-4 rounded-full"
+        className="inline-flex items-center gap-2 border border-gray-300 px-4 py-1.5 rounded-full"
       >
-        <Image
-          className="w-20"
-          src={assets.group_profile}
-          alt="Group profile"
-          width={80}
-          height={80}
-        />
         <p className="text-xs font-medium">Organisation de la société civile depuis 2010</p>
       </motion.div>
 

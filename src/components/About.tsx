@@ -21,7 +21,7 @@ const About = () => {
     >
       <Title
         title="À propos du REPSFECO-CI"
-        desc="Le Réseau Paix et Sécurité pour les Femmes de l'Espace CEDEAO — Section Côte d'Ivoire (REPSFECO-CI) est une organisation nationale qui œuvre depuis 2010 pour l'intégration des femmes dans les mécanismes de paix, de sécurité et de prévention des conflits en Côte d'Ivoire."
+        desc="REPSFECO-CI sert d'organe de coordination des initiatives des organisations de la société civile Ivoirienne dans le cadre du Plan d'Action de la CEDEAO pour la mise en œuvre des résolutions 1325/2000 et suivantes du Conseil de Sécurité des Nations Unies."
       />
 
       <motion.div

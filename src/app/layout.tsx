@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "REPSFECO-CI – Paix & Sécurité pour les Femmes en Côte d'Ivoire",
   description:
-    "Organisation engagée dans la paix, la sécurité, la prévention des conflits et l'autonomisation des femmes en Côte d'Ivoire. REPSFECO-CI œuvre depuis 2010 pour renforcer la participation des femmes dans les processus de paix et de sécurité.",
+    "REPSFECO-CI sert d'organe de coordination des initiatives des organisations de la société civile Ivoirienne dans le cadre du Plan d'Action de la CEDEAO pour la mise en œuvre des résolutions 1325/2000 et suivantes du Conseil de Sécurité des Nations Unies.",
   keywords: [
     "REPSFECO-CI",
     "Paix et sécurité",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "REPSFECO-CI – Paix & Sécurité pour les Femmes en Côte d'Ivoire",
     description:
-      "Organisation engagée dans la paix, la sécurité, la prévention des conflits et l'autonomisation des femmes en Côte d'Ivoire.",
+      "REPSFECO-CI sert d'organe de coordination des initiatives des organisations de la société civile Ivoirienne dans le cadre du Plan d'Action de la CEDEAO pour la mise en œuvre des résolutions 1325/2000 et suivantes du Conseil de Sécurité des Nations Unies.",
     type: "website",
     locale: "fr_FR",
   },

@@ -1,68 +1,97 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Title from "./Title";
 import { motion } from "motion/react";
-import Image from "next/image";
-import assets from "@/config/assets";
-import type { WorkItem } from "@/types/assets";
+import { activities as staticActivities } from "@/config/activities";
+import type { Activity } from "@/types/assets";
+import ActivityCard from "./ActivityCard";
+import ActivityModal from "./ActivityModal";
+import Link from "next/link";
 
 const OurWork = () => {
-  const workData: WorkItem[] = [
-    {
-      title: "Panel pour la Journée commémorative de la Résolution 1325",
-      description:
-        "Organisation d'un panel visant à renforcer l'application des piliers de l'Agenda « Femmes, Paix et Sécurité » en Côte d'Ivoire.",
-      image: assets.action_resolution_1325,
-    },
-    {
-      title: "Formation des femmes du Nord",
-      description: "Formation des femmes de Ouangolodougou, Niellé et Diawala à la prévention des conflits et à l'entrepreneuriat.",
-      image: assets.action_formation_nord,
-    },
-    {
-      title: "Mobilisation pour la paix au Sahel",
-      description:
-        "Mobilisation des femmes et des jeunes pour la paix au Sahel et en Côte d'Ivoire avec partenaires régionaux.",
-      image: assets.action_mobilisation_sahel,
-    },
-  ];
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [allActivities, setAllActivities] = useState<Activity[]>(staticActivities);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Charger les activités depuis l'API
+    fetch("/api/activities")
+      .then((res) => res.json())
+      .then((apiActivities: Activity[]) => {
+        // Combiner les activités statiques et dynamiques, trier par date
+        const combined = [...staticActivities, ...apiActivities].sort(
+          (a, b) => b.dateTimestamp - a.dateTimestamp
+        );
+        setAllActivities(combined);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setAllActivities(staticActivities);
+        setIsLoading(false);
+      });
+  }, []);
 
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true }}
-      transition={{ staggerChildren: 0.2 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ staggerChildren: 0.15 }}
       id="our-work"
       className="flex flex-col items-center gap-7 px-4 sm:px-12 lg:px-24 xl:px-40 pt-30 text-gray-700 dark:text-white"
     >
-      <Title
-        title="Nos actions"
-        desc="Des initiatives concrètes pour promouvoir la paix, la sécurité et l'autonomisation des femmes en Côte d'Ivoire."
-      />
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-        {workData.map((work, index) => (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-            viewport={{ once: true }}
-            key={index}
-            className="hover:scale-102 duration-500 transition-all cursor-pointer"
-          >
-            <Image
-              src={work.image}
-              className="w-full rounded-xl"
-              alt={work.title}
-              width={400}
-              height={300}
+      <div className="w-full max-w-6xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <Title
+              title="Nos actions"
+              desc="Des initiatives concrètes pour promouvoir la paix, la sécurité et l'autonomisation des femmes en Côte d'Ivoire."
             />
-            <h3 className="mt-3 mb-2 text-lg font-semibold">{work.title}</h3>
-            <p className="text-sm opacity-60 w-5/6">{work.description}</p>
-          </motion.div>
-        ))}
+          </div>
+          <Link
+            href="/admin"
+            className="px-6 py-3 bg-[#8B0000] dark:bg-[#A52A2A] text-white rounded-lg hover:opacity-90 transition-opacity font-medium text-sm whitespace-nowrap shadow-lg hover:shadow-xl"
+          >
+            + Publier une activité
+          </Link>
+        </div>
       </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-8 h-8 border-4 border-[#8B0000] border-t-transparent rounded-full"
+          />
+        </div>
+      ) : allActivities.length > 0 ? (
+        <div className="grid sm:grid-cols-2 gap-6 w-full max-w-6xl">
+          {allActivities.map((activity, index) => (
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              index={index}
+              onOpen={setSelectedActivity}
+            />
+          ))}
+        </div>
+      ) : (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-gray-500 dark:text-gray-400 text-center"
+        >
+          Aucune activité disponible pour le moment.
+        </motion.p>
+      )}
+
+      {/* Modal pour afficher les détails de l'activité */}
+      <ActivityModal
+        activity={selectedActivity}
+        onClose={() => setSelectedActivity(null)}
+      />
     </motion.div>
   );
 };

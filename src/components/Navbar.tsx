@@ -17,16 +17,19 @@ const Navbar = () => {
       initial={{ opacity: 0, y: -50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="flex justify-between items-center px-4 sm:px-8 lg:px-20 xl:px-32 py-4 sticky top-0 z-20 backdrop-blur-xl font-medium bg-white/50 dark:bg-gray-900/70"
+      className="navbar-container flex justify-between items-center px-4 sm:px-8 lg:px-20 xl:px-32 py-4 fixed top-0 z-20 backdrop-blur-xl font-medium bg-white/50 dark:bg-gray-900/70 w-full"
+      style={{ left: 0, right: 0, margin: 0 }}
     >
-      <Image
-        src={theme === "dark" ? assets.logo_dark : assets.logo}
-        className="h-12 sm:h-14 w-auto object-contain"
-        alt="Logo REPSFECO-CI"
-        width={180}
-        height={56}
-        priority
-      />
+      <Link href="/" className="cursor-pointer">
+        <Image
+          src={theme === "dark" ? assets.logo_dark : assets.logo}
+          className="h-12 sm:h-14 w-auto object-contain"
+          alt="Logo REPSFECO-CI"
+          width={180}
+          height={56}
+          priority
+        />
+      </Link>
 
       <div
         className={`text-gray-700 dark:text-white sm:text-sm ${
@@ -46,38 +49,45 @@ const Navbar = () => {
 
         <Link
           onClick={() => setSidebarOpen(false)}
-          href="#hero"
+          href="/#hero"
           className="sm:hover:border-b"
         >
           Accueil
         </Link>
         <Link
           onClick={() => setSidebarOpen(false)}
-          href="#about"
+          href="/#about"
           className="sm:hover:border-b"
         >
           Qui sommes-nous ?
         </Link>
         <Link
           onClick={() => setSidebarOpen(false)}
-          href="#services"
+          href="/#services"
           className="sm:hover:border-b"
         >
           Nos missions
         </Link>
         <Link
           onClick={() => setSidebarOpen(false)}
-          href="#our-work"
+          href="/#our-work"
           className="sm:hover:border-b"
         >
           Nos actions
         </Link>
         <Link
           onClick={() => setSidebarOpen(false)}
-          href="#contact-us"
+          href="/#contact-us"
           className="sm:hover:border-b"
         >
           Contactez-nous
+        </Link>
+        <Link
+          onClick={() => setSidebarOpen(false)}
+          href="/admin"
+          className="sm:hover:border-b text-[#8B0000] dark:text-[#A52A2A] font-semibold"
+        >
+          Publier
         </Link>
       </div>
 
@@ -94,7 +104,7 @@ const Navbar = () => {
         />
 
         <Link
-          href="#contact-us"
+          href="/#contact-us"
           className="text-sm max-sm:hidden flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full cursor-pointer hover:scale-103 transition-all"
         >
           Contactez-nous{" "}

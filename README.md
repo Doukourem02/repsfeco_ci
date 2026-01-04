@@ -17,7 +17,7 @@ Site web officiel du **Réseau Paix et Sécurité pour les Femmes de l'Espace CE
 
 Avant de commencer, assurez-vous d'avoir installé sur votre machine :
 
-- **Node.js** (version 18 ou supérieure recommandée)
+- **Node.js** (version 20 ou supérieure requise)
 - **npm** (généralement inclus avec Node.js) ou **yarn**
 
 Pour vérifier que vous avez Node.js installé, exécutez dans votre terminal :
@@ -28,6 +28,8 @@ npm --version
 ```
 
 Si vous ne les avez pas, téléchargez Node.js depuis [nodejs.org](https://nodejs.org/)
+
+> **Note :** Si vous utilisez `nvm` (Node Version Manager), vous pouvez exécuter `nvm use` dans le dossier du projet pour utiliser automatiquement la version Node.js 20 spécifiée dans le fichier `.nvmrc`.
 
 ## 🛠️ Installation
 
@@ -156,7 +158,7 @@ rm -rf node_modules package-lock.json
 npm install
 ```
 
-3. **Vérifiez votre version de Node.js** (doit être >= 18) :
+3. **Vérifiez votre version de Node.js** (doit être >= 20) :
 
 ```bash
 node --version
@@ -165,14 +167,15 @@ node --version
 ## 📞 Contact
 
 **REPSFECO-CI**  
-📍 Abidjan – Cocody Saint Jean Val Doyen, Rez de chaussée, Immeuble Charlemagne  
-📞 +225 57 99 14 90 / 21 35 09 03 / 22 44 67 08  
-✉️ repsfecoci@yahoo.fr  
+📍 **Siège social :** Abidjan Cocody Saint Jean Val Doyen 2, Immeuble Ariane, 1er étage, port 9  
+📮 **Adresse postale :** 06 BP 390 ABIDJAN 06  
+📞 **Tél. :** +225 07 57 99 14 90 / 05 04 34 34 24 / 07 08 54 08 78 / 27 22 44 67 08  
+✉️ **Email :** repsfecoci@yahoo.fr  
 🌐 [Facebook](https://www.facebook.com/repsfecociv/)
 
 ## 📄 À propos de REPSFECO-CI
 
-Le Réseau Paix et Sécurité pour les Femmes de l'Espace CEDEAO — Section Côte d'Ivoire (REPSFECO-CI) est une organisation nationale qui œuvre depuis 2010 pour l'intégration des femmes dans les mécanismes de paix, de sécurité et de prévention des conflits en Côte d'Ivoire.
+REPSFECO-CI sert d'organe de coordination des initiatives des organisations de la société civile Ivoirienne dans le cadre du Plan d'Action de la CEDEAO pour la mise en œuvre des résolutions 1325/2000 et suivantes du Conseil de Sécurité des Nations Unies.
 
 ### Objectifs clés :
 

@@ -34,8 +34,14 @@ const Footer = () => {
             height={48}
           />
           <p className="max-w-md text-sm leading-relaxed">
-            Organisation de la société civile dédiée à la promotion de la paix, à la prévention des conflits et à l'engagement des femmes dans les processus de gouvernance nationaux et communautaires.
+            REPSFECO-CI sert d'organe de coordination des initiatives des organisations de la société civile Ivoirienne dans le cadre du Plan d'Action de la CEDEAO pour la mise en œuvre des résolutions 1325/2000 et suivantes du Conseil de Sécurité des Nations Unies.
           </p>
+          <div className="mt-4 space-y-2 text-xs">
+            <p><span className="font-semibold">Siège social :</span> Abidjan Cocody Saint Jean Val Doyen 2, Immeuble Ariane, 1er étage, port 9</p>
+            <p><span className="font-semibold">Adresse postale :</span> 06 BP 390 ABIDJAN 06</p>
+            <p><span className="font-semibold">Tél. :</span> +225 07 57 99 14 90 / 05 04 34 34 24 / 07 08 54 08 78 / 27 22 44 67 08</p>
+            <p><span className="font-semibold">Email :</span> <a href="mailto:repsfecoci@yahoo.fr" className="hover:text-primary transition-colors">repsfecoci@yahoo.fr</a></p>
+          </div>
 
           <nav>
             <ul className="flex flex-wrap gap-4 sm:gap-6 md:gap-8">
