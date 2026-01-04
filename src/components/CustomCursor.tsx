@@ -39,17 +39,23 @@ const CustomCursor = () => {
 
   return (
     <>
-      {/* Custom Cursor Ring */}
+      {/* Custom Cursor Ring - Cercle extérieur animé */}
       <div
         ref={outlineRef}
-        className="fixed top-0 left-0 h-10 w-10 rounded-full border border-primary pointer-events-none z-[9999]"
-        style={{ transition: "transform 0.1s ease-out" }}
+        className="fixed top-0 left-0 h-10 w-10 rounded-full border-2 border-[#8B0000] dark:border-[#A52A2A] pointer-events-none z-[9999]"
+        style={{ 
+          transition: "transform 0.15s ease-out",
+          willChange: "transform"
+        }}
       />
 
-      {/* Custom Cursor Dot */}
+      {/* Custom Cursor Dot - Point central */}
       <div
         ref={dotRef}
-        className="fixed top-0 left-0 h-3 w-3 rounded-full bg-primary pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 h-3 w-3 rounded-full bg-[#8B0000] dark:bg-[#A52A2A] pointer-events-none z-[9999]"
+        style={{ 
+          willChange: "transform"
+        }}
       />
     </>
   );

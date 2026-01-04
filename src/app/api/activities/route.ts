@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, readFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
+import { cookies } from "next/headers";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const ACTIVITIES_FILE = path.join(DATA_DIR, "activities.json");
@@ -38,6 +39,17 @@ export async function GET() {
 // POST - Créer une nouvelle activité
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier l'authentification
+    const cookieStore = await cookies();
+    const session = cookieStore.get("admin_session");
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: "Non autorisé. Veuillez vous connecter." },
+        { status: 401 }
+      );
+    }
+
     await ensureDataFiles();
     const formData = await request.formData();
     

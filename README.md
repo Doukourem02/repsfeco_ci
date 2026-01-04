@@ -49,6 +49,16 @@ npm install
 
 Cette commande va installer toutes les dépendances nécessaires listées dans le fichier `package.json`. Cela peut prendre quelques minutes la première fois.
 
+4. **Configurer le mot de passe d'administration** (optionnel mais recommandé) :
+
+Créez un fichier `.env.local` à la racine du projet et ajoutez :
+
+```bash
+ADMIN_PASSWORD=votre_mot_de_passe_securise
+```
+
+> **Note :** Si vous ne créez pas ce fichier, le mot de passe par défaut sera `REPSFECO2024`. **Changez-le absolument en production !**
+
 ## ▶️ Lancer le Projet
 
 Une fois l'installation terminée, vous pouvez lancer le projet en mode développement :

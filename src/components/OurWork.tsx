@@ -14,7 +14,8 @@ const OurWork = () => {
   const [allActivities, setAllActivities] = useState<Activity[]>(staticActivities);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const loadActivities = () => {
+    setIsLoading(true);
     // Charger les activités depuis l'API
     fetch("/api/activities")
       .then((res) => res.json())
@@ -30,6 +31,23 @@ const OurWork = () => {
         setAllActivities(staticActivities);
         setIsLoading(false);
       });
+  };
+
+  useEffect(() => {
+    loadActivities();
+    
+    // Écouter les événements de rafraîchissement
+    const handleRefresh = () => {
+      loadActivities();
+    };
+    
+    window.addEventListener('activityUpdated', handleRefresh);
+    window.addEventListener('activityDeleted', handleRefresh);
+    
+    return () => {
+      window.removeEventListener('activityUpdated', handleRefresh);
+      window.removeEventListener('activityDeleted', handleRefresh);
+    };
   }, []);
 
   return (
@@ -42,16 +60,18 @@ const OurWork = () => {
       className="flex flex-col items-center gap-7 px-4 sm:px-12 lg:px-24 xl:px-40 pt-30 text-gray-700 dark:text-white"
     >
       <div className="w-full max-w-6xl">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-          <div className="flex-1">
-            <Title
-              title="Nos actions"
-              desc="Des initiatives concrètes pour promouvoir la paix, la sécurité et l'autonomisation des femmes en Côte d'Ivoire."
-            />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+          <div className="flex-1 max-w-2xl">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              Nos actions
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+              Des initiatives concrètes pour promouvoir la paix, la sécurité et l'autonomisation des femmes en Côte d'Ivoire.
+            </p>
           </div>
           <Link
             href="/admin"
-            className="px-6 py-3 bg-[#8B0000] dark:bg-[#A52A2A] text-white rounded-lg hover:opacity-90 transition-opacity font-medium text-sm whitespace-nowrap shadow-lg hover:shadow-xl"
+            className="px-6 py-3 bg-[#8B0000] dark:bg-[#A52A2A] text-white rounded-lg hover:opacity-90 transition-opacity font-medium text-sm whitespace-nowrap shadow-lg hover:shadow-xl self-start sm:self-center"
           >
             + Publier une activité
           </Link>

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import CustomCursor from "@/components/CustomCursor";
 
 export default function AdminLayout({
   children,
@@ -32,41 +33,8 @@ export default function AdminLayout({
     // Fixer aussi lors du redimensionnement
     window.addEventListener('resize', fixHeaderWidth);
 
-    // Cacher le curseur personnalisé s'il existe
-    const customCursors = document.querySelectorAll('[class*="cursor"], [id*="cursor"]');
-    customCursors.forEach((el) => {
-      if (el instanceof HTMLElement) {
-        el.style.display = "none";
-      }
-    });
-
-    // Réactiver le curseur normal seulement
-    const style = document.createElement("style");
-    style.id = "admin-cursor-fix";
-    style.textContent = `
-      * {
-        cursor: auto !important;
-      }
-      button, a, input, textarea, select {
-        cursor: pointer !important;
-      }
-      input[type="text"], input[type="date"], textarea {
-        cursor: text !important;
-      }
-    `;
-    document.head.appendChild(style);
-
     return () => {
       window.removeEventListener('resize', fixHeaderWidth);
-      const styleElement = document.getElementById("admin-cursor-fix");
-      if (styleElement) {
-        document.head.removeChild(styleElement);
-      }
-      customCursors.forEach((el) => {
-        if (el instanceof HTMLElement) {
-          el.style.display = "";
-        }
-      });
     };
   }, []);
 
@@ -75,6 +43,7 @@ export default function AdminLayout({
       <Navbar />
       {children}
       <Footer />
+      <CustomCursor />
     </div>
   );
 }

@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import assets from "@/config/assets";
 import type { ActivityFormData } from "@/types/activity";
+import type { Activity } from "@/types/assets";
 
 const categories = [
   "Formation",
@@ -18,9 +19,13 @@ const categories = [
   "Autre",
 ];
 
-export default function AdminPage() {
+export default function EditActivityPage() {
   const router = useRouter();
+  const params = useParams();
+  const activityId = typeof params.id === 'string' ? params.id : params.id?.[0] || '';
+  
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<ActivityFormData>({
     title: "",
     shortDescription: "",
@@ -31,49 +36,61 @@ export default function AdminPage() {
     images: [],
     videos: [],
   });
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingVideos, setExistingVideos] = useState<string[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  // Vérifier l'authentification au chargement
+  // Vérifier l'authentification et charger l'activité
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndLoad = async () => {
       try {
-        const response = await fetch("/api/auth/check");
-        const result = await response.json();
-        if (result.authenticated) {
-          setIsAuthenticated(true);
-        } else {
+        // Vérifier l'authentification
+        const authResponse = await fetch("/api/auth/check");
+        const authResult = await authResponse.json();
+        if (!authResult.authenticated) {
           setIsAuthenticated(false);
           router.push("/login");
+          return;
         }
+        setIsAuthenticated(true);
+
+        // Charger l'activité
+        const activitiesResponse = await fetch("/api/activities");
+        const activities: Activity[] = await activitiesResponse.json();
+        const activity = activities.find((a) => a.id === activityId);
+
+        if (!activity) {
+          toast.error("Activité non trouvée");
+          router.push("/admin");
+          return;
+        }
+
+        // Pré-remplir le formulaire
+        setFormData({
+          title: activity.title,
+          shortDescription: activity.shortDescription,
+          fullDescription: activity.fullDescription,
+          date: activity.date,
+          category: activity.category || "",
+          location: activity.location || "",
+          images: [],
+          videos: [],
+        });
+        setExistingImages(activity.images || []);
+        setExistingVideos(activity.videos || []);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Auth check error:", error);
-        setIsAuthenticated(false);
-        router.push("/login");
+        console.error("Error:", error);
+        toast.error("Une erreur s'est produite");
+        setIsLoading(false);
       }
     };
-    checkAuth();
-  }, [router]);
-
-  // Afficher un loader pendant la vérification
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B0000]"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Vérification...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si non authentifié, ne rien afficher (redirection en cours)
-  if (!isAuthenticated) {
-    return null;
-  }
+    checkAuthAndLoad();
+  }, [activityId, router]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -86,14 +103,12 @@ export default function AdminPage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Limiter à 10 images
     const newFiles = files.slice(0, 10);
     setFormData((prev) => ({
       ...prev,
       images: [...prev.images, ...newFiles].slice(0, 10),
     }));
 
-    // Créer les previews
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -107,14 +122,12 @@ export default function AdminPage() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Limiter à 5 vidéos
     const newFiles = files.slice(0, 5);
     setFormData((prev) => ({
       ...prev,
       videos: [...prev.videos, ...newFiles].slice(0, 5),
     }));
 
-    // Créer les previews vidéo
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -132,12 +145,20 @@ export default function AdminPage() {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const removeVideo = (index: number) => {
     setFormData((prev) => ({
       ...prev,
       videos: prev.videos.filter((_, i) => i !== index),
     }));
     setVideoPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingVideo = (index: number) => {
+    setExistingVideos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,6 +173,8 @@ export default function AdminPage() {
       submitFormData.append("date", formData.date);
       submitFormData.append("category", formData.category);
       submitFormData.append("location", formData.location);
+      submitFormData.append("existingImages", JSON.stringify(existingImages));
+      submitFormData.append("existingVideos", JSON.stringify(existingVideos));
 
       formData.images.forEach((image) => {
         submitFormData.append("images", image);
@@ -161,32 +184,24 @@ export default function AdminPage() {
         submitFormData.append("videos", video);
       });
 
-      const response = await fetch("/api/activities", {
-        method: "POST",
+      const encodedId = encodeURIComponent(activityId);
+      console.log("Submitting update for activity ID:", activityId, "Encoded:", encodedId);
+      
+      const response = await fetch(`/api/activities/${encodedId}`, {
+        method: "PUT",
         body: submitFormData,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        toast.success("Activité publiée avec succès !");
-        // Réinitialiser le formulaire
-        setFormData({
-          title: "",
-          shortDescription: "",
-          fullDescription: "",
-          date: "",
-          category: "",
-          location: "",
-          images: [],
-          videos: [],
-        });
-        setPreviews([]);
-        setVideoPreviews([]);
+        toast.success("Activité modifiée avec succès !");
+        // Déclencher un événement pour rafraîchir la liste
+        window.dispatchEvent(new Event('activityUpdated'));
         router.push("/#our-work");
         router.refresh();
       } else {
-        toast.error("Erreur lors de la publication");
+        toast.error(result.error || "Erreur lors de la modification");
       }
     } catch (error) {
       console.error("Error:", error);
@@ -203,6 +218,21 @@ export default function AdminPage() {
     year: "numeric",
   });
 
+  if (isAuthenticated === null || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B0000]"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-black w-full">
       <div className="max-w-4xl mx-auto w-full">
@@ -217,10 +247,10 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Publier une nouvelle activité
+                Modifier l'activité
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Partagez une mission ou un événement de REPSFECO-CI
+                Modifiez les informations de l'activité
               </p>
             </div>
           </div>
@@ -329,10 +359,53 @@ export default function AdminPage() {
               />
             </div>
 
+            {/* Images existantes */}
+            {existingImages.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Images existantes
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {existingImages.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <div className="relative aspect-square rounded-lg overflow-hidden">
+                        <Image
+                          src={image}
+                          alt={`Image ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 50vw, 25vw"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Upload d'images */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Images (jusqu'à 10 images)
+                Ajouter des images (jusqu'à 10 images)
               </label>
               <input
                 ref={fileInputRef}
@@ -365,7 +438,7 @@ export default function AdminPage() {
                 </div>
               </button>
 
-              {/* Previews des images */}
+              {/* Previews des nouvelles images */}
               {previews.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {previews.map((preview, index) => (
@@ -407,10 +480,51 @@ export default function AdminPage() {
               )}
             </div>
 
+            {/* Vidéos existantes */}
+            {existingVideos.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Vidéos existantes
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {existingVideos.map((video, index) => (
+                    <div key={index} className="relative group">
+                      <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-900">
+                        <video
+                          src={video}
+                          controls
+                          className="w-full h-full"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingVideo(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Upload de vidéos */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Vidéos (jusqu'à 5 vidéos)
+                Ajouter des vidéos (jusqu'à 5 vidéos)
               </label>
               <input
                 ref={videoInputRef}
@@ -443,7 +557,7 @@ export default function AdminPage() {
                 </div>
               </button>
 
-              {/* Previews des vidéos */}
+              {/* Previews des nouvelles vidéos */}
               {videoPreviews.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {videoPreviews.map((preview, index) => (
@@ -496,10 +610,10 @@ export default function AdminPage() {
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || (formData.images.length === 0 && formData.videos.length === 0)}
+                disabled={isSubmitting}
                 className="flex-1 px-6 py-3 bg-[#8B0000] dark:bg-[#A52A2A] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
-                {isSubmitting ? "Publication..." : "Publier l'activité"}
+                {isSubmitting ? "Modification..." : "Enregistrer les modifications"}
               </button>
             </div>
           </form>
