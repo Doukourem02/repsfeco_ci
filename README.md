@@ -49,15 +49,21 @@ npm install
 
 Cette commande va installer toutes les dépendances nécessaires listées dans le fichier `package.json`. Cela peut prendre quelques minutes la première fois.
 
-4. **Configurer le mot de passe d'administration** (optionnel mais recommandé) :
+4. **Configurer les variables d'environnement** :
 
 Créez un fichier `.env.local` à la racine du projet et ajoutez :
 
 ```bash
+# Mot de passe d'administration (optionnel mais recommandé)
 ADMIN_PASSWORD=votre_mot_de_passe_securise
+
+# Clé API Resend pour l'envoi d'emails (requis pour le formulaire de contact)
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-> **Note :** Si vous ne créez pas ce fichier, le mot de passe par défaut sera `REPSFECO2024`. **Changez-le absolument en production !**
+> **Note :** 
+> - Si vous ne créez pas `ADMIN_PASSWORD`, le mot de passe par défaut sera `REPSFECO2024`. **Changez-le absolument en production !**
+> - Pour obtenir une clé API Resend, créez un compte gratuit sur [resend.com](https://resend.com) et générez une clé API dans la section "API Keys". Les emails du formulaire de contact seront envoyés à `repsfecoci@yahoo.fr`.
 
 ## ▶️ Lancer le Projet
 
@@ -118,7 +124,7 @@ repsfeco_ci/
 - 🎯 **Curseur personnalisé** - Curseur animé personnalisé
 - 📱 **Design responsive** - Adapté à tous les écrans (mobile, tablette, desktop)
 - 🎨 **Animations fluides** - Utilisation de Motion pour des animations élégantes
-- 📧 **Formulaire de contact** - Formulaire avec notifications toast et intégration Web3Forms
+- 📧 **Formulaire de contact** - Formulaire avec notifications toast et envoi d'emails via Resend vers `repsfecoci@yahoo.fr`
 - 🌍 **Contenu multilingue** - Site entièrement en français
 - 🔍 **SEO optimisé** - Métadonnées et balises Open Graph configurées
 - ⚡ **Performance** - Optimisé avec Next.js et Turbopack pour des chargements rapides
@@ -157,11 +163,14 @@ Le site sera accessible sur `http://localhost:3000` en mode production.
 
 2. **Configurer les variables d'environnement** :
    - Dans les paramètres du projet Vercel, allez dans "Environment Variables"
-   - Ajoutez la variable suivante :
+   - Ajoutez les variables suivantes :
      ```
      ADMIN_PASSWORD=votre_mot_de_passe_securise
+     RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
      ```
-   - ⚠️ **Important** : Changez le mot de passe par défaut (`REPSFECO2024`) en production !
+   - ⚠️ **Important** : 
+     - Changez le mot de passe par défaut (`REPSFECO2024`) en production !
+     - Obtenez votre clé API Resend sur [resend.com](https://resend.com) pour activer l'envoi d'emails depuis le formulaire de contact
 
 3. **Déployer** :
    - Vercel détectera automatiquement Next.js
@@ -172,8 +181,9 @@ Le site sera accessible sur `http://localhost:3000` en mode production.
 
 - **Fichiers de données** : Les fichiers dans `/data` (activités et commentaires) seront créés automatiquement lors de la première utilisation
 - **Stockage** : Vercel utilise un système de fichiers éphémère. Pour un stockage persistant, considérez l'utilisation d'une base de données (Vercel Postgres, MongoDB, etc.)
-- **Variables d'environnement** : Assurez-vous que `ADMIN_PASSWORD` est bien configuré dans les paramètres Vercel
-- **Timeout** : Les fonctions API ont un timeout de 30 secondes (configuré dans `vercel.json`)
+- **Variables d'environnement** : Assurez-vous que `ADMIN_PASSWORD` et `RESEND_API_KEY` sont bien configurés dans les paramètres Vercel
+- **Timeout** : Les fonctions API ont un timeout de 60 secondes (configuré dans `vercel.json`)
+- **Emails** : Les emails du formulaire de contact sont envoyés à `repsfecoci@yahoo.fr` via Resend
 
 ## 📝 Notes Importantes
 

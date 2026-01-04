@@ -12,23 +12,26 @@ const ContactUs = () => {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-
-    // ------- Enter your Web3Forms key below -----
-    formData.append("access_key", "--- Enter Web3Forms key ---");
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const message = formData.get("message") as string;
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch("/api/contact", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, message }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        toast.success("Merci pour votre message !");
+      if (response.ok && data.success) {
+        toast.success("Merci pour votre message ! Nous vous répondrons bientôt.");
         event.currentTarget.reset();
       } else {
-        toast.error(data.message);
+        toast.error(data.error || "Une erreur s'est produite lors de l'envoi");
       }
     } catch (error) {
       toast.error(
