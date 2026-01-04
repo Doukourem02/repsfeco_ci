@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import Image from "next/image";
 import { FormEvent } from "react";
 import toast from "react-hot-toast";
+import emailjs from "@emailjs/browser";
 import Title from "./Title";
 
 const ContactUs = () => {
@@ -16,26 +17,44 @@ const ContactUs = () => {
     const email = formData.get("email") as string;
     const message = formData.get("message") as string;
 
+    // Vérifier que les variables d'environnement sont disponibles
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+
+    if (!serviceId || !templateId || !publicKey) {
+      toast.error("Configuration email manquante. Veuillez contacter l'administrateur.");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, message }),
+      // Préparer les paramètres pour EmailJS
+      const now = new Date();
+      const time = now.toLocaleString("fr-FR", {
+        dateStyle: "long",
+        timeStyle: "short",
       });
 
-      const data = await response.json();
+      const templateParams = {
+        from_name: name,
+        from_email: email,
+        to_email: "repsfecoci@yahoo.fr",
+        message: message,
+        reply_to: email,
+        time: time,
+      };
 
-      if (response.ok && data.success) {
-        toast.success("Merci pour votre message ! Nous vous répondrons bientôt.");
-        event.currentTarget.reset();
-      } else {
-        toast.error(data.error || "Une erreur s'est produite lors de l'envoi");
-      }
+      // Envoyer l'email via EmailJS (côté client)
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+
+      toast.success("Merci pour votre message ! Nous vous répondrons bientôt.");
+      event.currentTarget.reset();
     } catch (error) {
+      console.error("Erreur EmailJS:", error);
       toast.error(
-        error instanceof Error ? error.message : "Une erreur s'est produite"
+        error instanceof Error
+          ? error.message
+          : "Une erreur s'est produite lors de l'envoi"
       );
     }
   };

@@ -13,6 +13,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@tailwindcss/postcss": "^4",
     "motion": "^12.23.12",
     "next": "^16.0.8",
@@ -20,7 +21,6 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
-    "resend": "^6.6.0",
     "tailwindcss": "^4"
   },
   "devDependencies": {

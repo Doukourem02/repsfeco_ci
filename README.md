@@ -57,13 +57,22 @@ Créez un fichier `.env.local` à la racine du projet et ajoutez :
 # Mot de passe d'administration (optionnel mais recommandé)
 ADMIN_PASSWORD=votre_mot_de_passe_securise
 
-# Clé API Resend pour l'envoi d'emails (requis pour le formulaire de contact)
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# Configuration EmailJS pour l'envoi d'emails (requis pour le formulaire de contact)
+# IMPORTANT: Utilisez NEXT_PUBLIC_ pour exposer les variables au client
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=votre_service_id
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=votre_template_id
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=votre_public_key
 ```
 
 > **Note :** 
 > - Si vous ne créez pas `ADMIN_PASSWORD`, le mot de passe par défaut sera `REPSFECO2024`. **Changez-le absolument en production !**
-> - Pour obtenir une clé API Resend, créez un compte gratuit sur [resend.com](https://resend.com) et générez une clé API dans la section "API Keys". Les emails du formulaire de contact seront envoyés à `repsfecoci@yahoo.fr`.
+> - **Configuration EmailJS (gratuit, sans domaine requis)** :
+>   1. Créez un compte gratuit sur [emailjs.com](https://www.emailjs.com)
+>   2. Créez un service email (Gmail, Outlook, etc.) dans "Email Services"
+>   3. Créez un template d'email dans "Email Templates" avec les variables : `{{from_name}}`, `{{from_email}}`, `{{message}}`, `{{time}}`
+>   4. Dans "Account" → "General", copiez votre **"Public Key"** (pour les appels côté client)
+>   5. Ajoutez les 3 valeurs dans `.env.local` avec le préfixe `NEXT_PUBLIC_` : `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`
+>   6. Les emails seront envoyés à `repsfecoci@yahoo.fr`
 
 ## ▶️ Lancer le Projet
 
@@ -124,7 +133,7 @@ repsfeco_ci/
 - 🎯 **Curseur personnalisé** - Curseur animé personnalisé
 - 📱 **Design responsive** - Adapté à tous les écrans (mobile, tablette, desktop)
 - 🎨 **Animations fluides** - Utilisation de Motion pour des animations élégantes
-- 📧 **Formulaire de contact** - Formulaire avec notifications toast et envoi d'emails via Resend vers `repsfecoci@yahoo.fr`
+- 📧 **Formulaire de contact** - Formulaire avec notifications toast et envoi d'emails via EmailJS (gratuit) vers `repsfecoci@yahoo.fr`
 - 🌍 **Contenu multilingue** - Site entièrement en français
 - 🔍 **SEO optimisé** - Métadonnées et balises Open Graph configurées
 - ⚡ **Performance** - Optimisé avec Next.js et Turbopack pour des chargements rapides
@@ -181,9 +190,9 @@ Le site sera accessible sur `http://localhost:3000` en mode production.
 
 - **Fichiers de données** : Les fichiers dans `/data` (activités et commentaires) seront créés automatiquement lors de la première utilisation
 - **Stockage** : Vercel utilise un système de fichiers éphémère. Pour un stockage persistant, considérez l'utilisation d'une base de données (Vercel Postgres, MongoDB, etc.)
-- **Variables d'environnement** : Assurez-vous que `ADMIN_PASSWORD` et `RESEND_API_KEY` sont bien configurés dans les paramètres Vercel
+- **Variables d'environnement** : Assurez-vous que `ADMIN_PASSWORD`, `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, et `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` sont bien configurés dans les paramètres Vercel
 - **Timeout** : Les fonctions API ont un timeout de 60 secondes (configuré dans `vercel.json`)
-- **Emails** : Les emails du formulaire de contact sont envoyés à `repsfecoci@yahoo.fr` via Resend
+- **Emails** : Les emails du formulaire de contact sont envoyés à `repsfecoci@yahoo.fr` via EmailJS (service gratuit, sans domaine requis)
 
 ## 📝 Notes Importantes
 

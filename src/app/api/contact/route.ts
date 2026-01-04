@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Vérifier que la clé API est configurée
-if (!process.env.RESEND_API_KEY) {
-  console.warn(
-    "⚠️ RESEND_API_KEY n'est pas configurée. Les emails ne pourront pas être envoyés."
-  );
-}
 
 export async function POST(request: NextRequest) {
   try {
-    // Vérifier que la clé API est configurée
-    if (!process.env.RESEND_API_KEY) {
+    // Vérifier que les clés EmailJS sont configurées
+    // Note: Pour les appels serveur, on utilise la Private Key, pas la Public Key
+    if (
+      !process.env.EMAILJS_SERVICE_ID ||
+      !process.env.EMAILJS_TEMPLATE_ID ||
+      !process.env.EMAILJS_PRIVATE_KEY
+    ) {
+      console.warn(
+        "⚠️ EmailJS n'est pas configuré. Les emails ne pourront pas être envoyés."
+      );
       return NextResponse.json(
         {
           error:
@@ -43,74 +41,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fonction pour échapper le HTML (sécurité XSS)
-    const escapeHtml = (text: string) => {
-      const map: Record<string, string> = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      };
-      return text.replace(/[&<>"']/g, (m) => map[m]);
-    };
-
-    // Échapper les valeurs pour éviter les injections XSS
-    const safeName = escapeHtml(name);
-    const safeEmail = escapeHtml(email);
-    const safeMessage = escapeHtml(message);
-
-    // Expéditeur configurable (par défaut: onboarding@resend.dev pour les tests)
-    const fromEmail =
-      process.env.RESEND_FROM_EMAIL ||
-      "Contact REPSFECO-CI <onboarding@resend.dev>";
-
-    // Envoyer l'email à repsfecoci@yahoo.fr
-    const { data, error } = await resend.emails.send({
-      from: fromEmail,
-      to: ["repsfecoci@yahoo.fr"],
-      replyTo: email,
-      subject: `Nouveau message de contact de ${safeName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #8B0000; border-bottom: 2px solid #8B0000; padding-bottom: 10px;">
-            Nouveau message de contact
-          </h2>
-          
-          <div style="margin-top: 20px;">
-            <p><strong>Nom:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
-          </div>
-          
-          <div style="margin-top: 30px; padding: 20px; background-color: #f5f5f5; border-radius: 5px;">
-            <h3 style="color: #333; margin-top: 0;">Message:</h3>
-            <p style="white-space: pre-wrap; color: #555; line-height: 1.6;">${safeMessage}</p>
-          </div>
-          
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px;">
-            <p>Ce message a été envoyé depuis le formulaire de contact du site REPSFECO-CI.</p>
-          </div>
-        </div>
-      `,
-      text: `
-Nouveau message de contact
-
-Nom: ${name}
-Email: ${email}
-
-Message:
-${message}
-
----
-Ce message a été envoyé depuis le formulaire de contact du site REPSFECO-CI.
-      `,
+    // Préparer les paramètres pour EmailJS
+    const now = new Date();
+    const time = now.toLocaleString("fr-FR", {
+      dateStyle: "long",
+      timeStyle: "short",
     });
 
-    if (error) {
-      console.error("Erreur Resend:", error);
+    const templateParams = {
+      from_name: name,
+      from_email: email,
+      to_email: "repsfecoci@yahoo.fr",
+      message: message,
+      reply_to: email,
+      time: time,
+    };
+
+    // Envoyer l'email via EmailJS API
+    // Pour les appels serveur, on utilise la Private Key comme accessToken
+    const requestBody = {
+      service_id: process.env.EMAILJS_SERVICE_ID,
+      template_id: process.env.EMAILJS_TEMPLATE_ID,
+      user_id: process.env.EMAILJS_PRIVATE_KEY, // Private Key utilisée comme user_id
+      template_params: templateParams,
+    };
+
+    console.log("Envoi EmailJS avec:", {
+      service_id: process.env.EMAILJS_SERVICE_ID,
+      template_id: process.env.EMAILJS_TEMPLATE_ID,
+      has_private_key: !!process.env.EMAILJS_PRIVATE_KEY,
+    });
+
+    const response = await fetch(
+      `https://api.emailjs.com/api/v1.0/email/send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    const responseText = await response.text();
+    let errorData;
+    
+    try {
+      errorData = JSON.parse(responseText);
+    } catch {
+      errorData = { text: responseText };
+    }
+
+    if (!response.ok) {
+      console.error("Erreur EmailJS:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+      });
+      
       return NextResponse.json(
-        { error: "Erreur lors de l'envoi de l'email" },
-        { status: 500 }
+        {
+          error:
+            errorData.text ||
+            errorData.message ||
+            `Erreur ${response.status}: ${response.statusText}`,
+        },
+        { status: response.status }
       );
     }
 
@@ -131,4 +127,3 @@ Ce message a été envoyé depuis le formulaire de contact du site REPSFECO-CI.
     );
   }
 }
-

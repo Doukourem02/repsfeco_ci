@@ -1,12 +1,6 @@
 {
-  "/admin/edit/[id]/page": "app/admin/edit/[id]/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/api/activities/[id]/route": "app/api/activities/[id]/route.js",
   "/api/activities/route": "app/api/activities/route.js",
   "/api/auth/check/route": "app/api/auth/check/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/comments/route": "app/api/comments/route.js",
-  "/login/page": "app/login/page.js",
+  "/api/contact/route": "app/api/contact/route.js",
   "/page": "app/page.js"
 }
