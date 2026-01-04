@@ -22,6 +22,7 @@ const ActivityComments = ({ activity, onAddComment }: ActivityCommentsProps) => 
     if (!newComment.trim() || !authorName.trim()) return;
 
     onAddComment(activity.id, {
+      activityId: activity.id,
       author: authorName,
       content: newComment,
       date: new Date().toLocaleDateString("fr-FR", {

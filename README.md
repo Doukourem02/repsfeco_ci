@@ -142,6 +142,39 @@ npm run start
 
 Le site sera accessible sur `http://localhost:3000` en mode production.
 
+## 🚀 Déploiement sur Vercel
+
+### Prérequis
+- Un compte GitHub avec le projet poussé
+- Un compte Vercel (gratuit)
+
+### Étapes de déploiement
+
+1. **Connecter votre projet à Vercel** :
+   - Allez sur [vercel.com](https://vercel.com)
+   - Cliquez sur "Add New Project"
+   - Importez votre dépôt GitHub
+
+2. **Configurer les variables d'environnement** :
+   - Dans les paramètres du projet Vercel, allez dans "Environment Variables"
+   - Ajoutez la variable suivante :
+     ```
+     ADMIN_PASSWORD=votre_mot_de_passe_securise
+     ```
+   - ⚠️ **Important** : Changez le mot de passe par défaut (`REPSFECO2024`) en production !
+
+3. **Déployer** :
+   - Vercel détectera automatiquement Next.js
+   - Cliquez sur "Deploy"
+   - Le déploiement se fera automatiquement
+
+### Notes importantes pour Vercel
+
+- **Fichiers de données** : Les fichiers dans `/data` (activités et commentaires) seront créés automatiquement lors de la première utilisation
+- **Stockage** : Vercel utilise un système de fichiers éphémère. Pour un stockage persistant, considérez l'utilisation d'une base de données (Vercel Postgres, MongoDB, etc.)
+- **Variables d'environnement** : Assurez-vous que `ADMIN_PASSWORD` est bien configuré dans les paramètres Vercel
+- **Timeout** : Les fonctions API ont un timeout de 30 secondes (configuré dans `vercel.json`)
+
 ## 📝 Notes Importantes
 
 - Le projet utilise **Next.js 16** avec **Turbopack** pour un développement ultra-rapide
