@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { upload } from "@vercel/blob/client";
 import assets from "@/config/assets";
 import type { ActivityFormData } from "@/types/activity";
 
@@ -17,6 +18,38 @@ const categories = [
   "Conférence",
   "Autre",
 ];
+
+function sanitizeFileName(fileName: string) {
+  return fileName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+}
+
+async function uploadActivityFiles(
+  activityId: string,
+  files: File[],
+  kind: "img" | "video"
+) {
+  const uploads = await Promise.all(
+    files.map((file, index) =>
+      upload(
+        `actions/${activityId}/${kind}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`,
+        file,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob/upload",
+          multipart: true,
+          clientPayload: JSON.stringify({ activityId, kind }),
+        }
+      )
+    )
+  );
+
+  return uploads.map((blob) => blob.url);
+}
 
 export default function AdminPage() {
   const router = useRouter();
@@ -145,30 +178,31 @@ export default function AdminPage() {
     setIsSubmitting(true);
 
     try {
-      const submitFormData = new FormData();
-      submitFormData.append("title", formData.title);
-      submitFormData.append("shortDescription", formData.shortDescription);
-      submitFormData.append("fullDescription", formData.fullDescription);
-      submitFormData.append("date", formData.date);
-      submitFormData.append("category", formData.category);
-      submitFormData.append("location", formData.location);
-
-      formData.images.forEach((image) => {
-        submitFormData.append("images", image);
-      });
-
-      formData.videos.forEach((video) => {
-        submitFormData.append("videos", video);
-      });
+      const activityId = `act${Date.now()}`;
+      const imageUrls = await uploadActivityFiles(activityId, formData.images, "img");
+      const videoUrls = await uploadActivityFiles(activityId, formData.videos, "video");
 
       const response = await fetch("/api/activities", {
         method: "POST",
-        body: submitFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: activityId,
+          title: formData.title,
+          shortDescription: formData.shortDescription,
+          fullDescription: formData.fullDescription,
+          date: formData.date,
+          category: formData.category,
+          location: formData.location,
+          images: imageUrls,
+          videos: videoUrls,
+        }),
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && result.success) {
         toast.success("Activité publiée avec succès !");
         // Réinitialiser le formulaire
         setFormData({
@@ -508,4 +542,3 @@ export default function AdminPage() {
     </div>
   );
 }
-

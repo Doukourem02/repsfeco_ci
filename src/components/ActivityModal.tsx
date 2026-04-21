@@ -40,18 +40,31 @@ const ActivityModal = ({ activity, onClose }: ActivityModalProps) => {
   useEffect(() => {
     if (activity) {
       document.body.style.overflow = "hidden";
-      // Charger les commentaires
-      fetch(`/api/comments?activityId=${activity.id}`)
-        .then((res) => res.json())
-        .then((comments: Comment[]) => {
+
+      const loadActivityDetails = async () => {
+        try {
+          const [activityResponse, commentsResponse] = await Promise.all([
+            fetch(`/api/activities/${encodeURIComponent(activity.id)}`),
+            fetch(`/api/comments?activityId=${activity.id}`),
+          ]);
+
+          const detailedActivity: Activity = activityResponse.ok
+            ? await activityResponse.json()
+            : activity;
+          const comments: Comment[] = commentsResponse.ok
+            ? await commentsResponse.json()
+            : [];
+
           setActivityWithComments({
-            ...activity,
+            ...detailedActivity,
             comments: comments.sort((a, b) => b.dateTimestamp - a.dateTimestamp),
           });
-        })
-        .catch(() => {
+        } catch {
           setActivityWithComments({ ...activity, comments: [] });
-        });
+        }
+      };
+
+      loadActivityDetails();
     } else {
       document.body.style.overflow = "unset";
       setActivityWithComments(null);
@@ -268,4 +281,3 @@ const ActivityModal = ({ activity, onClose }: ActivityModalProps) => {
 };
 
 export default ActivityModal;
-

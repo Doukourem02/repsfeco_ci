@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import { upload } from "@vercel/blob/client";
 import assets from "@/config/assets";
 import type { ActivityFormData } from "@/types/activity";
 import type { Activity } from "@/types/assets";
@@ -18,6 +19,38 @@ const categories = [
   "Conférence",
   "Autre",
 ];
+
+function sanitizeFileName(fileName: string) {
+  return fileName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+}
+
+async function uploadActivityFiles(
+  activityId: string,
+  files: File[],
+  kind: "img" | "video"
+) {
+  const uploads = await Promise.all(
+    files.map((file, index) =>
+      upload(
+        `actions/${activityId}/${kind}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`,
+        file,
+        {
+          access: "public",
+          handleUploadUrl: "/api/blob/upload",
+          multipart: true,
+          clientPayload: JSON.stringify({ activityId, kind }),
+        }
+      )
+    )
+  );
+
+  return uploads.map((blob) => blob.url);
+}
 
 export default function EditActivityPage() {
   const router = useRouter();
@@ -59,9 +92,10 @@ export default function EditActivityPage() {
         setIsAuthenticated(true);
 
         // Charger l'activité
-        const activitiesResponse = await fetch("/api/activities");
-        const activities: Activity[] = await activitiesResponse.json();
-        const activity = activities.find((a) => a.id === activityId);
+        const activitiesResponse = await fetch(`/api/activities/${encodeURIComponent(activityId)}`);
+        const activity: Activity | null = activitiesResponse.ok
+          ? await activitiesResponse.json()
+          : null;
 
         if (!activity) {
           toast.error("Activité non trouvée");
@@ -166,35 +200,32 @@ export default function EditActivityPage() {
     setIsSubmitting(true);
 
     try {
-      const submitFormData = new FormData();
-      submitFormData.append("title", formData.title);
-      submitFormData.append("shortDescription", formData.shortDescription);
-      submitFormData.append("fullDescription", formData.fullDescription);
-      submitFormData.append("date", formData.date);
-      submitFormData.append("category", formData.category);
-      submitFormData.append("location", formData.location);
-      submitFormData.append("existingImages", JSON.stringify(existingImages));
-      submitFormData.append("existingVideos", JSON.stringify(existingVideos));
-
-      formData.images.forEach((image) => {
-        submitFormData.append("images", image);
-      });
-
-      formData.videos.forEach((video) => {
-        submitFormData.append("videos", video);
-      });
+      const uploadedImages = await uploadActivityFiles(activityId, formData.images, "img");
+      const uploadedVideos = await uploadActivityFiles(activityId, formData.videos, "video");
 
       const encodedId = encodeURIComponent(activityId);
       console.log("Submitting update for activity ID:", activityId, "Encoded:", encodedId);
       
       const response = await fetch(`/api/activities/${encodedId}`, {
         method: "PUT",
-        body: submitFormData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          shortDescription: formData.shortDescription,
+          fullDescription: formData.fullDescription,
+          date: formData.date,
+          category: formData.category,
+          location: formData.location,
+          images: [...existingImages, ...uploadedImages],
+          videos: [...existingVideos, ...uploadedVideos],
+        }),
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && result.success) {
         toast.success("Activité modifiée avec succès !");
         // Déclencher un événement pour rafraîchir la liste
         window.dispatchEvent(new Event('activityUpdated'));
@@ -622,4 +653,3 @@ export default function EditActivityPage() {
     </div>
   );
 }
-

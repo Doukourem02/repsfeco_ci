@@ -1,20 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, readFile, mkdir, unlink } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
 import { cookies } from "next/headers";
+import { del } from "@vercel/blob";
+import { readActivities, writeActivities } from "@/lib/activityStore";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const ACTIVITIES_FILE = path.join(DATA_DIR, "activities.json");
+// GET - Récupérer une activité
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const id = decodeURIComponent(resolvedParams.id);
+    const activities = await readActivities();
+    const activity = activities.find((a) => a.id === id);
 
-// Initialiser les fichiers si nécessaire
-async function ensureDataFiles() {
-  if (!existsSync(DATA_DIR)) {
-    await mkdir(DATA_DIR, { recursive: true });
-  }
-  
-  if (!existsSync(ACTIVITIES_FILE)) {
-    await writeFile(ACTIVITIES_FILE, JSON.stringify([]), "utf-8");
+    if (!activity) {
+      return NextResponse.json(
+        { error: "Activité non trouvée" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(activity);
+  } catch (error) {
+    console.error("Error reading activity:", error);
+    return NextResponse.json(
+      { error: "Failed to read activity" },
+      { status: 500 }
+    );
   }
 }
 
@@ -35,27 +48,22 @@ export async function PUT(
       );
     }
 
-    await ensureDataFiles();
-    const formData = await request.formData();
-    
     const resolvedParams = await params;
     const id = decodeURIComponent(resolvedParams.id);
     console.log("Updating activity with ID:", id);
-    
-    const title = formData.get("title") as string;
-    const shortDescription = formData.get("shortDescription") as string;
-    const fullDescription = formData.get("fullDescription") as string;
-    const date = formData.get("date") as string;
-    const category = formData.get("category") as string;
-    const location = formData.get("location") as string;
-    const images = formData.getAll("images") as File[];
-    const videos = formData.getAll("videos") as File[];
-    const existingImages = formData.get("existingImages") as string;
-    const existingVideos = formData.get("existingVideos") as string;
+
+    const body = await request.json();
+    const title = body.title as string;
+    const shortDescription = body.shortDescription as string;
+    const fullDescription = body.fullDescription as string;
+    const date = body.date as string;
+    const category = body.category as string;
+    const location = body.location as string;
+    const imageUrls = Array.isArray(body.images) ? body.images.filter(Boolean) : [];
+    const videoUrls = Array.isArray(body.videos) ? body.videos.filter(Boolean) : [];
 
     // Lire les activités existantes
-    const existingData = await readFile(ACTIVITIES_FILE, "utf-8");
-    const activities = JSON.parse(existingData);
+    const activities = await readActivities();
     
     console.log("Total activities in file:", activities.length);
     console.log("Looking for ID:", id);
@@ -72,48 +80,6 @@ export async function PUT(
     }
 
     const existingActivity = activities[activityIndex];
-    let imageUrls: string[] = existingImages ? JSON.parse(existingImages) : existingActivity.images || [];
-    let videoUrls: string[] = existingVideos ? JSON.parse(existingVideos) : existingActivity.videos || [];
-
-    // Gérer les nouvelles images
-    if (images.length > 0) {
-      const imageUploadDir = path.join(process.cwd(), "public", "assets", "actions", id, "img");
-      if (!existsSync(imageUploadDir)) {
-        await mkdir(imageUploadDir, { recursive: true });
-      }
-
-      for (let i = 0; i < images.length; i++) {
-        const image = images[i];
-        if (image && image.size > 0) {
-          const bytes = await image.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          const filename = `${Date.now()}-${i}-${image.name}`;
-          const filepath = path.join(imageUploadDir, filename);
-          await writeFile(filepath, buffer);
-          imageUrls.push(`/assets/actions/${id}/img/${filename}`);
-        }
-      }
-    }
-
-    // Gérer les nouvelles vidéos
-    if (videos.length > 0) {
-      const videoUploadDir = path.join(process.cwd(), "public", "assets", "actions", id, "video");
-      if (!existsSync(videoUploadDir)) {
-        await mkdir(videoUploadDir, { recursive: true });
-      }
-
-      for (let i = 0; i < videos.length; i++) {
-        const video = videos[i];
-        if (video && video.size > 0) {
-          const bytes = await video.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          const filename = `${Date.now()}-${i}-${video.name}`;
-          const filepath = path.join(videoUploadDir, filename);
-          await writeFile(filepath, buffer);
-          videoUrls.push(`/assets/actions/${id}/video/${filename}`);
-        }
-      }
-    }
 
     // Mettre à jour l'activité
     const { parseFrenchDate } = await import("@/utils/dateParser");
@@ -134,7 +100,7 @@ export async function PUT(
     activities[activityIndex] = updatedActivity;
 
     // Sauvegarder
-    await writeFile(ACTIVITIES_FILE, JSON.stringify(activities, null, 2), "utf-8");
+    await writeActivities(activities);
 
     return NextResponse.json({ success: true, activity: updatedActivity });
   } catch (error) {
@@ -163,14 +129,12 @@ export async function DELETE(
       );
     }
 
-    await ensureDataFiles();
     const resolvedParams = await params;
     const id = decodeURIComponent(resolvedParams.id);
     console.log("Deleting activity with ID:", id);
 
     // Lire les activités existantes
-    const existingData = await readFile(ACTIVITIES_FILE, "utf-8");
-    const activities = JSON.parse(existingData);
+    const activities = await readActivities();
 
     // Trouver l'activité à supprimer
     const activityIndex = activities.findIndex((a: any) => a.id === id);
@@ -181,19 +145,20 @@ export async function DELETE(
       );
     }
 
-    // Supprimer les fichiers associés
-    const activityDir = path.join(process.cwd(), "public", "assets", "actions", id);
-    if (existsSync(activityDir)) {
-      // Supprimer récursivement le dossier
-      const { rm } = await import("fs/promises");
-      await rm(activityDir, { recursive: true, force: true });
+    const activity = activities[activityIndex];
+    const mediaUrls = [...(activity.images || []), ...(activity.videos || [])].filter(
+      (url) => typeof url === "string" && url.includes("vercel-storage.com")
+    );
+
+    if (mediaUrls.length > 0 && process.env.BLOB_READ_WRITE_TOKEN) {
+      await del(mediaUrls);
     }
 
     // Supprimer l'activité de la liste
     activities.splice(activityIndex, 1);
 
     // Sauvegarder
-    await writeFile(ACTIVITIES_FILE, JSON.stringify(activities, null, 2), "utf-8");
+    await writeActivities(activities);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -204,4 +169,3 @@ export async function DELETE(
     );
   }
 }
-
