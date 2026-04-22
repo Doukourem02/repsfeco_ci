@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import assets from "@/config/assets";
 import type { ActivityFormData } from "@/types/activity";
 import type { Activity } from "@/types/assets";
@@ -35,20 +34,29 @@ async function uploadActivityFiles(
   kind: "img" | "video"
 ) {
   const uploads = await Promise.all(
-    files.map((file, index) =>
-      upload(
-        `actions/${activityId}/${kind}/${Date.now()}-${index}-${sanitizeFileName(file.name)}`,
-        file,
-        {
-          access: "public",
-          handleUploadUrl: "/api/blob/upload",
-          clientPayload: JSON.stringify({ activityId, kind }),
-        }
-      )
-    )
+    files.map(async (file, index) => {
+      const formData = new FormData();
+      formData.append("file", file, sanitizeFileName(file.name));
+      formData.append("activityId", activityId);
+      formData.append("kind", kind);
+      formData.append("index", String(index));
+
+      const response = await fetch("/api/upload-media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.url) {
+        throw new Error(result.error || "Upload du fichier impossible.");
+      }
+
+      return result.url as string;
+    })
   );
 
-  return uploads.map((blob) => blob.url);
+  return uploads;
 }
 
 export default function EditActivityPage() {
