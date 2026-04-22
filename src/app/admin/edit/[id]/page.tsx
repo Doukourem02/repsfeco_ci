@@ -4,8 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { useRouter, useParams } from "next/navigation";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import assets from "@/config/assets";
+import ActivityMediaImage from "@/components/ActivityMediaImage";
 import type { ActivityFormData } from "@/types/activity";
 import type { Activity } from "@/types/assets";
 
@@ -407,10 +407,9 @@ export default function EditActivityPage() {
                   {existingImages.map((image, index) => (
                     <div key={index} className="relative group">
                       <div className="relative aspect-square rounded-lg overflow-hidden">
-                        <Image
+                        <ActivityMediaImage
                           src={image}
                           alt={`Image ${index + 1}`}
-                          fill
                           className="object-cover"
                           sizes="(max-width: 640px) 50vw, 25vw"
                         />

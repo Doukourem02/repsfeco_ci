@@ -2,10 +2,9 @@
 
 import { useState, useRef } from "react";
 import { motion } from "motion/react";
-import Image from "next/image";
 import type { Activity } from "@/types/assets";
 import { formatRelativeDate } from "@/utils/dateParser";
-import assets from "@/config/assets";
+import ActivityMediaImage from "./ActivityMediaImage";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -152,10 +151,9 @@ const ActivityCard = ({ activity, index, onOpen }: ActivityCardProps) => {
           >
             {activity.images.length === 1 ? (
               <div className="relative w-full h-64 sm:h-96">
-                <Image
+                <ActivityMediaImage
                   src={activity.images[0]}
                   alt={activity.title}
-                  fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 768px) 100vw, 768px"
                 />
@@ -169,10 +167,9 @@ const ActivityCard = ({ activity, index, onOpen }: ActivityCardProps) => {
                   viewport={{ once: true }}
                   className="relative h-48 sm:h-64"
                 >
-                  <Image
+                  <ActivityMediaImage
                     src={activity.images[0]}
                     alt={activity.title}
-                    fill
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 384px"
                   />
@@ -185,10 +182,9 @@ const ActivityCard = ({ activity, index, onOpen }: ActivityCardProps) => {
                     viewport={{ once: true }}
                     className="relative h-48 sm:h-64"
                   >
-                    <Image
+                    <ActivityMediaImage
                       src={activity.images[1]}
                       alt={activity.title}
-                      fill
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, 384px"
                     />
@@ -244,4 +240,3 @@ const ActivityCard = ({ activity, index, onOpen }: ActivityCardProps) => {
 };
 
 export default ActivityCard;
-

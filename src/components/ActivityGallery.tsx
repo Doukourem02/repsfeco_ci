@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import Image from "next/image";
+import ActivityMediaImage from "./ActivityMediaImage";
 
 interface ActivityGalleryProps {
   images: string[];
@@ -85,10 +85,9 @@ const ActivityGallery = ({ images, videos, title }: ActivityGalleryProps) => {
               transition={{ duration: 0.3 }}
               className="absolute inset-0"
             >
-              <Image
+              <ActivityMediaImage
                 src={images[selectedImage]}
                 alt={`${title} - Image ${selectedImage + 1}`}
-                fill
                 className="object-cover"
                 sizes="100vw"
               />
@@ -213,10 +212,9 @@ const ActivityGallery = ({ images, videos, title }: ActivityGalleryProps) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Image
+              <ActivityMediaImage
                 src={image}
                 alt={`Miniature ${index + 1}`}
-                fill
                 className="object-cover"
                 sizes="(max-width: 640px) 25vw, 16vw"
               />
@@ -229,4 +227,3 @@ const ActivityGallery = ({ images, videos, title }: ActivityGalleryProps) => {
 };
 
 export default ActivityGallery;
-

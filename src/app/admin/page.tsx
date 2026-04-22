@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import Image from "next/image";
 import assets from "@/config/assets";
 import type { ActivityFormData } from "@/types/activity";
 
