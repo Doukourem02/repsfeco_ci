@@ -17,25 +17,22 @@ const ALLOWED_CONTENT_TYPES = [
 ];
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
-  console.log("Blob route body type:", body?.type);
-  console.log("Blob route pathname:", (body as any)?.pathname);
-
   try {
+    const body = (await request.json()) as HandleUploadBody;
+
     const jsonResponse = await handleUpload({
       body,
       request,
-    onBeforeGenerateToken: async (pathname, clientPayload, multipart) => {
-            console.log("Generating token for:", pathname);
-            console.log("Client payload:", clientPayload);
-            console.log("Multipart:", multipart);
-      
+      onBeforeGenerateToken: async (pathname, clientPayload, multipart) => {
         const cookieStore = await cookies();
         const session = cookieStore.get("admin_session");
 
         if (!session) {
           throw new Error("Non autorisé. Veuillez vous connecter.");
+        }
+
+        if (multipart) {
+          throw new Error("L'upload multipart est désactivé pour éviter le blocage CORS.");
         }
 
         return {
@@ -49,7 +46,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         console.log("Activity media upload completed:", blob.pathname);
       },
     });
-    console.log("Blob route response type:", jsonResponse?.type);
+
     return NextResponse.json(jsonResponse);
   } catch (error) {
     console.error("Blob upload error:", error);

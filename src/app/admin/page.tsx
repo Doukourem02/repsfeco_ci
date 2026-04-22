@@ -41,7 +41,6 @@ async function uploadActivityFiles(
         {
           access: "public",
           handleUploadUrl: "/api/blob/upload",
-          multipart: true,
           clientPayload: JSON.stringify({ activityId, kind }),
         }
       )
