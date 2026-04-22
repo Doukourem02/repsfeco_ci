@@ -65,12 +65,14 @@ export async function POST(request: Request) {
     const safeIndex = typeof index === "string" && index ? index : "0";
     const pathname = `actions/${activityId}/${kind}/${Date.now()}-${safeIndex}-${sanitizeFileName(file.name)}`;
     const blob = await put(pathname, file, {
-      access: "public",
+      access: "private",
       contentType: file.type,
       addRandomSuffix: true,
     });
 
-    return NextResponse.json({ url: blob.url });
+    return NextResponse.json({
+      url: `/api/media?pathname=${encodeURIComponent(blob.pathname)}`,
+    });
   } catch (error) {
     console.error("Server media upload error:", error);
     return NextResponse.json(

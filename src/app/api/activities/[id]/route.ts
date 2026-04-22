@@ -3,6 +3,25 @@ import { cookies } from "next/headers";
 import { del } from "@vercel/blob";
 import { readActivities, writeActivities } from "@/lib/activityStore";
 
+function getBlobDeleteTarget(mediaUrl: string) {
+  if (mediaUrl.includes("vercel-storage.com")) {
+    return mediaUrl;
+  }
+
+  try {
+    const url = new URL(mediaUrl, "https://repsfeco-ci.vercel.app");
+    const pathname = url.searchParams.get("pathname");
+
+    if (url.pathname === "/api/media" && pathname) {
+      return pathname;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 // GET - Récupérer une activité
 export async function GET(
   request: NextRequest,
@@ -146,9 +165,10 @@ export async function DELETE(
     }
 
     const activity = activities[activityIndex];
-    const mediaUrls = [...(activity.images || []), ...(activity.videos || [])].filter(
-      (url) => typeof url === "string" && url.includes("vercel-storage.com")
-    );
+    const mediaUrls = [...(activity.images || []), ...(activity.videos || [])]
+      .filter((url) => typeof url === "string")
+      .map(getBlobDeleteTarget)
+      .filter((url): url is string => Boolean(url));
 
     if (mediaUrls.length > 0 && process.env.BLOB_READ_WRITE_TOKEN) {
       await del(mediaUrls);

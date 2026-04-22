@@ -39,7 +39,7 @@ export async function readActivities() {
   }
 
   const result = await get(ACTIVITIES_BLOB_PATH, {
-    access: "public",
+    access: "private",
   });
 
   if (!result || result.statusCode === 304 || !result.stream) {
@@ -65,7 +65,7 @@ export async function writeActivities(activities: Activity[]) {
   }
 
   await put(ACTIVITIES_BLOB_PATH, JSON.stringify(activities, null, 2), {
-    access: "public",
+    access: "private",
     allowOverwrite: true,
     cacheControlMaxAge: 60,
     contentType: "application/json",
